@@ -1,10 +1,8 @@
 import rospy, tf, numpy, math, sys
-#from kobuki_msgs.msg import BumperEvent
 from std_msgs.msg import String
 from geometry_msgs.msg import Twist, Pose, Point
 from nav_msgs.msg import Odometry, OccupancyGrid
 from geometry_msgs.msg import PoseStamped, PoseWithCovarianceStamped
-#from tf.transformations import euler_from_quaternion
 from nav_msgs.msg import GridCells
 
 from Queue import PriorityQueue
