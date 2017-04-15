@@ -8,7 +8,7 @@ from nav_msgs.msg import GridCells
 
 from Queue import PriorityQueue
 from math import *
-from a2star import *
+from astar import *
 
  
 xAdjust = 0.5
@@ -49,20 +49,11 @@ def readLocalMap(data):
     local_height = data.info.height
     
 
-def parseMapData(data, width, height):
-    myMap = []
-    row = 0
-    for i in range(len(data)):
-        if i % width == 0:
-            row += 1
-            sys.stdout.write('%4s' %(data[i]))    
-
 def buildPoseStamped(node):
     msg = PoseStamped()
     msg.pose.position = nodeToPoint(node)
-    
-
     return msg
+
 def publishCells(info, publisher):
     a=0
     cells = GridCells()
@@ -86,18 +77,16 @@ def nodeToPoint(node):
     return point
 
 def convertInitNode(pose):
-    global init_x_cord
-    global init_y_cord
-    print "converting node"    
-    init_x_cord, init_y_cord = convertToGridCell(pose.pose.pose.position.x , pose.pose.pose.position.y)
-    print "xStart: ", init_x_cord, "   yStart:", init_y_cord
-
+    global initialX
+    global initialY
+    initialX, inititialY = convertToGridCell(pose.pose.pose.position.x , pose.pose.pose.position.y)
+    
 def convertFinalNode(pose):
-    global final_x_cord
-    global final_y_cordfinal_
-    final_x_cord, final_y_cord = convertToGridCell(pose.pose.position.x, pose.pose.position.y)
-    start = Node.makeNode(init_x_cord, init_y_cord)
-    goal = Node.makeNode(final_x_cord, final_y_cord)
+    global finalX
+    global finalY
+    finalX, finalY = convertToGridCell(pose.pose.position.x, pose.pose.position.y)
+    start = Node.makeNode(initialX, initialY)
+    goal = Node.makeNode(finalX, finalY)
     global openSet
     global costSoFar
    
@@ -113,20 +102,18 @@ def convertFinalNode(pose):
         publishCells(waypoints, pub_waypoints)
       
         
-        print "\n"
-        next = waypoints[-1]
+       next = waypoints[-1]
         
         pub_myWaypoint.publish(buildPoseStamped(next))
         start = next
 
-        dummy = raw_input("Press enter to continue...")
   
 
 def isTurn(before, now, after):
     if before.x - after.x != 0 and before.x - now.x !=0:
-        mBtoA = float(before.y - after.y) / (before.x - after.x)
-        mBtoN = float(before.y - now.y) / (before.x - now.x)
-        sameLine = abs(mBtoA - mBtoN) > 0.000001
+        slopeAB = float(before.y - after.y) / (before.x - after.x)
+        slopeBN= float(before.y - now.y) / (before.x - now.x)
+        sameLine = abs(slopeAB-slopeBN) > 0.000001
         return sameLine
     else :
         return now.x - after.x != 0
@@ -173,7 +160,7 @@ def run():
 
 
     
-    rospy.init_node('lab3')
+    rospy.init_node('Lab 4')
     
     pub_open = rospy.Publisher("/openCells", GridCells, queue_size=1) 
     pub_closed = rospy.Publisher("/closedCells", GridCells, queue_size=1) 
@@ -185,7 +172,7 @@ def run():
     sub = rospy.Subscriber("/exp_map", OccupancyGrid, mapCallBack)
     sub_initPose = rospy.Subscriber('/initialpose1', PoseWithCovarianceStamped, convertInitNode, queue_size=10)   #initail pose 1 
     sub_finalPose = rospy.Subscriber('/move_base_simple/goal1', PoseStamped, convertFinalNode, queue_size=10) #goal 1 - need that to avoid Rviz running built in stuff
-    sub_exp_map = rospy.Subscriber('/move_base/local_costmap/costmap', OccupancyGrid, readLocalMap, queue_size = 1)
+    sub_exp_map = rospy.Subscriber('/expandMap', OccupancyGrid, readLocalMap, queue_size = 1)
     rospy.sleep(10)
 
 
