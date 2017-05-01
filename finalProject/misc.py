@@ -80,7 +80,7 @@ class Node:
         self.parent = parent
         self.obstacleProb = 50
 
-    @staticmethod
+    
     def makeNode(x, y, g = 0, parent = None):
         return Node(x, y, g, parent)
 
